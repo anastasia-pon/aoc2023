@@ -6,6 +6,7 @@ public interface ISolutionService
 {
     public int GetSolutionDay1(int part, string input);
     public int GetSolutionDay2(int part, string input);
+    public int GetSolutionDay3(int part, string input);
 }
 
 public class SolutionService : ISolutionService
@@ -149,5 +150,72 @@ public class SolutionService : ISolutionService
         });
 
         return powerOfGames.Sum();
+    }
+    
+    public int GetSolutionDay3(int part, string input)
+    {
+        var numberRegex = new Regex(@"(\d+)");
+        var symbolRegex = new Regex(@"[^\d\.]");
+
+        var lines = input.Split("\n");
+
+        var partNumbers = new List<int>();
+
+        foreach (var (line, lineIndex) in lines.Select((line, lineIndex) => ( line, lineIndex )))
+        {
+            var numberMatches = numberRegex.Matches(line);
+            
+            foreach (Match numberMatch in numberMatches)
+            {
+                var number = int.Parse(numberMatch.Groups[1].ToString());
+
+                if (HasSymbol(numberMatch.Index, numberMatch.Value, line, symbolRegex))
+                {
+                    partNumbers.Add(number);
+                    continue;
+                }
+                
+                if (lineIndex > 0)
+                {
+                    var topLine = lines[lineIndex - 1];
+                    var topLineNeighbors = topLine.Substring(numberMatch.Index, numberMatch.Value.Length);
+                    if (HasSymbol(numberMatch.Index, topLineNeighbors, topLine, symbolRegex))
+                    {
+                        partNumbers.Add(number);
+                        continue;
+                    }
+                }
+                
+                if (lineIndex < lines.Length - 1)
+                {
+                    var bottomLine = lines[lineIndex + 1];
+                    if (bottomLine.Length < 1) continue;
+                    var bottomLineNeighbors = bottomLine.Substring(numberMatch.Index, numberMatch.Value.Length);
+                    if (HasSymbol(numberMatch.Index, bottomLineNeighbors, bottomLine, symbolRegex))
+                    {
+                        partNumbers.Add(number);
+                    }
+                }
+            }
+        }
+
+        return partNumbers.Sum();
+    }
+
+    private bool HasSymbol(int numberStartsAt, string mainString, string line, Regex symbolRegex)
+    {
+        var mainStringWithMargins = mainString;
+        if (numberStartsAt > 0)
+        {
+            var leftNeighbor = line[numberStartsAt - 1].ToString();
+            mainStringWithMargins = leftNeighbor + mainString;
+        }
+        if (numberStartsAt + mainString.Length < 139)
+        {
+            var rightNeighbor = line[numberStartsAt + mainString.Length].ToString();
+            mainStringWithMargins += rightNeighbor;
+        }
+
+        return symbolRegex.IsMatch(mainStringWithMargins);
     }
 }
