@@ -26,6 +26,7 @@ public class AocController : ControllerBase
         switch (day)
         {
             case 1: return Ok(_solutionService.GetSolutionDay1(part, input));
+            case 2: return Ok(_solutionService.GetSolutionDay2(part, input));
             default: return BadRequest($"There is no solution for day {day}");
         }
     }

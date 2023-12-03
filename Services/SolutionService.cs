@@ -5,6 +5,7 @@ namespace aoc2023.Services;
 public interface ISolutionService
 {
     public int GetSolutionDay1(int part, string input);
+    public int GetSolutionDay2(int part, string input);
 }
 
 public class SolutionService : ISolutionService
@@ -27,6 +28,7 @@ public class SolutionService : ISolutionService
             { "eight", 8 },
             { "nine", 9 }
         };
+        
         var lines = input.Split("\n");
         var linesOfDigits = lines.Select(line =>
         {
@@ -54,5 +56,98 @@ public class SolutionService : ISolutionService
         });
 
         return linesOfDigits.Sum();
+    }
+    
+    public int GetSolutionDay2(int part, string input)
+    {
+        var redRegex = new Regex(@"(\d+)\sred");
+        var greenRegex = new Regex(@"(\d+)\sgreen");
+        var blueRegex = new Regex(@"(\d+)\sblue");
+        var games = input.Split("\n");
+        if (part == 1) return GetSolutionDay2Part1(games, redRegex, greenRegex, blueRegex);
+        return GetSolutionDay2Part2(games, redRegex, greenRegex, blueRegex);
+    }
+    
+    private int GetSolutionDay2Part1(string[] games, Regex redRegex, Regex greenRegex, Regex blueRegex)
+    {
+        var maxRed = 12;
+        var maxGreen = 13;
+        var maxBlue = 14;
+        var gameRegex = new Regex(@"Game\s(\d+)");
+
+        IEnumerable<int> possibleGames = games.Select(game =>
+        {
+            if (game.Length == 0) return 0;
+            
+            var rounds = game.Split(";");
+            foreach (var round in rounds)
+            {
+                var redMatch = redRegex.Match(round);
+                if (redMatch.Success)
+                {
+                    var numOfRed = int.Parse(redMatch.Groups[1].ToString());
+                    if (numOfRed > maxRed) return 0;
+                }
+                
+                var greenMatch = greenRegex.Match(round);
+                if (greenMatch.Success)
+                {
+                    var numOfGreen = int.Parse(greenMatch.Groups[1].ToString());
+                    if (numOfGreen > maxGreen) return 0;
+                }
+                
+                var blueMatch = blueRegex.Match(round);
+                if (blueMatch.Success)
+                {
+                    var numOfBlue = int.Parse(blueMatch.Groups[1].ToString());
+                    if (numOfBlue > maxBlue) return 0;
+                }
+            }
+
+            var gameMatch = gameRegex.Match(game).Groups[1].ToString();
+            return int.Parse(gameMatch);
+        });
+
+        return possibleGames.Sum();
+    }
+    
+    private int GetSolutionDay2Part2(string[] games, Regex redRegex, Regex greenRegex, Regex blueRegex)
+    {
+        var powerOfGames = games.Select(game =>
+        {
+            if (game.Length == 0) return 0;
+            
+            var rounds = game.Split(";");
+            var redNum = 0;
+            var greenNum = 0;
+            var blueNum = 0;
+            foreach (var round in rounds)
+            {
+                var redMatch = redRegex.Match(round);
+                if (redMatch.Success)
+                {
+                    var redInRound = int.Parse(redMatch.Groups[1].ToString());
+                    if (redInRound > redNum) redNum = redInRound;
+                }
+                
+                var greenMatch = greenRegex.Match(round);
+                if (greenMatch.Success)
+                {
+                    var greenInRound = int.Parse(greenMatch.Groups[1].ToString());
+                    if (greenInRound > greenNum) greenNum = greenInRound;
+                }
+                
+                var blueMatch = blueRegex.Match(round);
+                if (blueMatch.Success)
+                {
+                    var blueInRound = int.Parse(blueMatch.Groups[1].ToString());
+                    if (blueInRound > blueNum) blueNum = blueInRound;
+                }
+            }
+
+            return redNum * greenNum * blueNum;
+        });
+
+        return powerOfGames.Sum();
     }
 }
