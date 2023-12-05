@@ -154,6 +154,12 @@ public class SolutionService : ISolutionService
     
     public int GetSolutionDay3(int part, string input)
     {
+        if (part == 1) return GetSolutionDay3Part1(input); 
+        return GetSolutionDay3Part2(input); 
+    }
+    
+    private int GetSolutionDay3Part1(string input)
+    {
         var numberRegex = new Regex(@"(\d+)");
         var symbolRegex = new Regex(@"[^\d\.]");
 
@@ -217,5 +223,93 @@ public class SolutionService : ISolutionService
         }
 
         return symbolRegex.IsMatch(mainStringWithMargins);
+    }
+    
+    private int GetSolutionDay3Part2(string input)
+    {
+        var starRegex = new Regex(@"\*");
+        var numberRegex = new Regex(@"(\d+)");
+
+        var lines = input.Split("\n");
+
+        var gearRatios = new List<int>();
+
+        foreach (var (line, lineIndex) in lines.Select((line, lineIndex) => ( line, lineIndex )))
+        {
+            var starMatches = starRegex.Matches(line);
+            
+            foreach (Match starMatch in starMatches)
+            {
+                var neighborNumbers = new List<int>();
+                var starWithNeighborsSubstring = line.Substring(
+                    Math.Max(0, starMatch.Index - 3), 
+                    starMatch.Index + 3 > 139 ? 139 - starMatch.Index : 7);
+                var starIndexInSubstring = starMatch.Index - 3 < 0 ? starMatch.Index : 3;
+                
+                var sideNumberMatches = numberRegex.Matches(starWithNeighborsSubstring);
+                if (sideNumberMatches.Count > 0)
+                {
+                    foreach (Match sideNumberMatch in sideNumberMatches)
+                    {
+                        if (IsAdjacentToStar(starIndexInSubstring, sideNumberMatch))
+                        {
+                            neighborNumbers.Add(int.Parse(sideNumberMatch.Groups[1].ToString()));
+                        }
+                    }
+                }
+
+                if (lineIndex > 0)
+                {
+                    var topLine = lines[lineIndex - 1];
+                    var topLineNeighbors = topLine.Substring(
+                        Math.Max(0, starMatch.Index - 3), 
+                        starMatch.Index + 3 > 139 ? 139 - starMatch.Index : 7);
+                    var topNumberMatches = numberRegex.Matches(topLineNeighbors);
+                    if (topNumberMatches.Count > 0)
+                    {
+                        foreach (Match topNumberMatch in topNumberMatches)
+                        {
+                            if (IsAdjacentToStar(starIndexInSubstring, topNumberMatch))
+                            {
+                                neighborNumbers.Add(int.Parse(topNumberMatch.Groups[1].ToString()));
+                            }
+                        }
+                    }
+                }
+                
+                if (lineIndex < lines.Length - 1)
+                {
+                    var bottomLine = lines[lineIndex + 1];
+                    if (bottomLine.Length > 0)
+                    {
+                        var bottomLineNeighbors = bottomLine.Substring(
+                            Math.Max(0, starMatch.Index - 3), 
+                            starMatch.Index + 3 > 139 ? 139 - starMatch.Index : 7);
+                        var bottomNumberMatches = numberRegex.Matches(bottomLineNeighbors);
+                        if (bottomNumberMatches.Count > 0)
+                        {
+                            foreach (Match bottomNumberMatch in bottomNumberMatches)
+                            {
+                                if (IsAdjacentToStar(starIndexInSubstring, bottomNumberMatch))
+                                {
+                                    neighborNumbers.Add(int.Parse(bottomNumberMatch.Groups[1].ToString()));
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (neighborNumbers.Count == 2) gearRatios.Add(neighborNumbers[0] * neighborNumbers[1]);
+            }
+        }
+
+        return gearRatios.Sum();
+    }
+    
+    private bool IsAdjacentToStar(int starIndexInSubstring, Match numberMatch)
+    {
+        var startIndex = numberMatch.Index;
+        var endIndex = numberMatch.Index + numberMatch.Value.Length - 1;
+        return startIndex <= starIndexInSubstring + 1 && starIndexInSubstring - 1 <= endIndex;
     }
 }
