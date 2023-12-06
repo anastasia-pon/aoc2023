@@ -7,6 +7,8 @@ public interface ISolutionService
     public int GetSolutionDay1(int part, string input);
     public int GetSolutionDay2(int part, string input);
     public int GetSolutionDay3(int part, string input);
+    public int GetSolutionDay4(int part, string input);
+    public int GetSolutionDay5(int part, string input);
 }
 
 public class SolutionService : ISolutionService
@@ -311,5 +313,78 @@ public class SolutionService : ISolutionService
         var startIndex = numberMatch.Index;
         var endIndex = numberMatch.Index + numberMatch.Value.Length - 1;
         return startIndex <= starIndexInSubstring + 1 && starIndexInSubstring - 1 <= endIndex;
+    }
+    
+    public int GetSolutionDay4(int part, string input)
+    {
+        if (part == 1) return GetSolutionDay4Part1(input);
+        return GetSolutionDay4Part2(input);
+    }
+    
+    private int GetSolutionDay4Part1(string input)
+    {
+        var cards = input.Split("\n");
+        var scores = new List<int>();
+
+        foreach (var card in cards)
+        {
+            if (card.Length == 0) continue;
+            var cardBody = card.Split(":")[1];
+            var winningNumbers = cardBody.Split("|")[0];
+            var availableNumbers = cardBody.Split("|")[1];
+            var winningNumbersList = winningNumbers.Split(" ").Where(v => v != "").ToList();
+            var availableNumbersList = availableNumbers.Split(" ").Where(v => v != "").ToList();
+            var scoringNumbers = winningNumbersList.Intersect(availableNumbersList).ToList();
+            switch (scoringNumbers.Count)
+            {
+                case 0:
+                    continue;
+                case 1:
+                    scores.Add(1);
+                    break;
+                case > 1:
+                {
+                    var parsedNumbers = scoringNumbers.Select(int.Parse).ToList();
+                    scores.Add((int)Math.Pow(2, parsedNumbers.Count - 1));
+                    break;
+                }
+            }
+
+            ;
+        }
+        return scores.Sum(); 
+    }
+    
+    private int GetSolutionDay4Part2(string input)
+    {
+        var cards = input.Split("\n").Where(card => card != "");
+        var cardDictionary = cards.ToDictionary(card => card.Split(":")[1], _ => 1);
+        var totalCards = 0;
+        
+        foreach(var ((body, count), cardIndex) in cardDictionary.Select((value, i) => ( value, i )))
+        {
+            var winningNumbers = body.Split("|")[0];
+            var availableNumbers = body.Split("|")[1];
+            var winningNumbersList = winningNumbers.Split(" ").Where(v => v != "").ToList();
+            var availableNumbersList = availableNumbers.Split(" ").Where(v => v != "").ToList();
+            var scoringNumbers = winningNumbersList.Intersect(availableNumbersList).ToList().Count;
+            if (scoringNumbers > 0)
+            {
+                for (var i = 1; i <= scoringNumbers; i++)
+                {
+                    var repeatedCard = cardDictionary.ElementAt(cardIndex + i);
+                    cardDictionary[repeatedCard.Key] = repeatedCard.Value + count;
+                }
+            }
+            totalCards += count;
+        }
+        
+        return totalCards; 
+    }
+    
+    public int GetSolutionDay5(int part, string input)
+    {
+        if (part == 1) return GetSolutionDay4Part1(input);
+        return GetSolutionDay4Part2(input);
     }
 }

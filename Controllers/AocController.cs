@@ -28,6 +28,8 @@ public class AocController : ControllerBase
             case 1: return Ok(_solutionService.GetSolutionDay1(part, input));
             case 2: return Ok(_solutionService.GetSolutionDay2(part, input));
             case 3: return Ok(_solutionService.GetSolutionDay3(part, input));
+            case 4: return Ok(_solutionService.GetSolutionDay4(part, input));
+            case 5: return Ok(_solutionService.GetSolutionDay5(part, input));
             default: return BadRequest($"There is no solution for day {day}");
         }
     }
